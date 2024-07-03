@@ -7,27 +7,24 @@ namespace WeatherData.Models.Entity
 {
     public partial class WeatherDataContext : DbContext
     {
-	    private readonly IConfiguration _configuration;
-	    
-	    public WeatherDataContext(IConfiguration configuration)
-	    {
-		    _configuration = configuration;
-	    }
+        public WeatherDataContext()
+        {
+        }
 
-	    public WeatherDataContext(DbContextOptions<WeatherDataContext> options, IConfiguration configuration)
-		    : base(options)
-	    {
-		    _configuration = configuration;
-	    }
+        public WeatherDataContext(DbContextOptions<WeatherDataContext> options)
+            : base(options)
+        {
+        }
 
         public virtual DbSet<City> Cities { get; set; } = null!;
-        public virtual DbSet<Temperature> Temperatures { get; set; } = null!;
+        public virtual DbSet<TemperatureRecord> TemperatureRecords { get; set; } = null!;
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)
             {
-	            optionsBuilder.UseSqlServer(_configuration.GetConnectionString("DefaultConnection"));
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
+                optionsBuilder.UseSqlServer("Server=(LocalDB)\\MSSQLLocalDB;Database=WeatherData;Trusted_Connection=True;");
             }
         }
 
@@ -48,26 +45,20 @@ namespace WeatherData.Models.Entity
                 entity.Property(e => e.LastRequestedDate)
                     .HasColumnType("datetime")
                     .HasDefaultValueSql("('1900-01-01 00:00:00')");
-
-                entity.Property(e => e.Relevant).HasDefaultValueSql("('true')");
             });
 
-            modelBuilder.Entity<Temperature>(entity =>
+            modelBuilder.Entity<TemperatureRecord>(entity =>
             {
-                entity.ToTable("Temperature");
-
                 entity.Property(e => e.Id).HasColumnName("ID");
 
                 entity.Property(e => e.CityId).HasColumnName("CityID");
 
                 entity.Property(e => e.ModifiedTime).HasColumnType("datetime");
 
-                entity.Property(e => e.Temperature1)
-                    .HasColumnType("decimal(18, 0)")
-                    .HasColumnName("Temperature");
+                entity.Property(e => e.Temperature).HasColumnType("decimal(18, 0)");
 
                 entity.HasOne(d => d.City)
-                    .WithMany(p => p.Temperatures)
+                    .WithMany(p => p.TemperatureRecords)
                     .HasForeignKey(d => d.CityId)
                     .HasConstraintName("FK__Temperatu__CityI__398D8EEE");
             });

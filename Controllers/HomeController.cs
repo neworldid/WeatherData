@@ -21,14 +21,15 @@ public class HomeController : Controller
 
 	public IActionResult Index()
 	{
-		var newCity = new City
+		/*var newCity = new City
 		{
 			CityName = "Moscow",
 			Country = "Russia"
 		};
 		
 		_context.Cities.Add(newCity);
-		_context.SaveChanges();
+		_context.SaveChanges();*/
+		
 		
 		return View();
 	}
@@ -37,12 +38,5 @@ public class HomeController : Controller
 	public IActionResult Error()
 	{
 		return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
-	}
-	
-	private WeatherModel? GetWeatherData(string cityName)
-	{
-		const string appId = "9b24294673a04bd5a32530f0895c841a";
-		var data = _client.GetStringAsync($"https://api.openweathermap.org/data/2.5/weather?q={cityName}&appid={appId}&units=metric").GetAwaiter().GetResult();
-		return JsonSerializer.Deserialize<WeatherModel>(data);
 	}
 }

@@ -8,6 +8,7 @@
 
     <ItemGroup>
       <_ContentIncludedByDefault Remove="wwwroot\dist\bundle.js" />
+      <_ContentIncludedByDefault Remove="Views\Home\Index.cshtml" />
     </ItemGroup>
 
     <ItemGroup>
@@ -16,6 +17,10 @@
         <PrivateAssets>all</PrivateAssets>
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       </PackageReference>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Models\Entity\" />
     </ItemGroup>
 
 </Project>
