@@ -1,39 +1,36 @@
 ﻿using System.Diagnostics;
-using System.Text.Json;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Mvc;
+using WeatherData.Contracts;
 using WeatherData.Models;
-using WeatherData.Models.Entity;
 
 namespace WeatherData.Controllers;
 
 public class HomeController : Controller
 {
-	private readonly ILogger<HomeController> _logger;
-	private readonly HttpClient _client;
-	private readonly WeatherDataContext _context;
+	private readonly IWeatherDataService _dataService;
 
-	public HomeController(ILogger<HomeController> logger, HttpClient client, WeatherDataContext context)
+	public HomeController(IWeatherDataService dataService)
 	{
-		_logger = logger;
-		_client = client;
-		_context = context;
+		_dataService = dataService;
 	}
 
 	public IActionResult Index()
 	{
-		/*var newCity = new City
-		{
-			CityName = "Moscow",
-			Country = "Russia"
-		};
-		
-		_context.Cities.Add(newCity);
-		_context.SaveChanges();*/
-		
-		
 		return View();
 	}
+	
+	[HttpGet]
+	public Task<JsonResult> GetTemperatureRecords()
+	{
+		var cityIds = _dataService.GetLastRequestedCities(5).Select(x => x.Id).ToList();
+		
+		var temperatures = _dataService.GetActualTemperatureData(cityIds, 5);
+		
+		return Task.FromResult(Json(new { Success = true, Data = temperatures }));
+	}
 
+	[ExcludeFromCodeCoverage]
 	[ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
 	public IActionResult Error()
 	{

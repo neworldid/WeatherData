@@ -1,0 +1,50 @@
+﻿using System.Text.Json;
+using WeatherData.Contracts;
+using WeatherData.Models;
+using WeatherData.Models.Entity;
+
+namespace WeatherData.BackgroundServices;
+
+public class WeatherDataServiceProcessor : IWeatherDataServiceProcessor
+{
+	private readonly IHttpClientFacade _client;
+	private readonly IWeatherDataService _weatherDataService;
+	private readonly IConfiguration _configuration;
+	private readonly IDateTimeFacade _dateTime;
+
+	public WeatherDataServiceProcessor(IHttpClientFacade client, IWeatherDataService weatherDataService, IConfiguration configuration, IDateTimeFacade dateTime)
+	{
+		_client = client;
+		_weatherDataService = weatherDataService;
+		_configuration = configuration;
+		_dateTime = dateTime;
+	}
+	
+	public void UpdateTemperatureData()
+	{
+		var activeCities = _weatherDataService.GetLastRequestedCities(5);
+		var temperatureRecords = new List<TemperatureRecord>();
+		
+		foreach (var city in activeCities)
+		{
+			var weatherData = GetWeatherData(city.CityName);
+
+			temperatureRecords.Add(new TemperatureRecord
+			{
+				CityId = city.Id,
+				Temperature = weatherData.main.temp,
+				ModifiedTime = _dateTime.Now()
+			});
+		}
+		_weatherDataService.AddTemperatureData(temperatureRecords);
+	}
+	
+	private WeatherModel? GetWeatherData(string cityName)
+	{
+		var data = _client.GetStringAsync(string.Format(
+			_configuration["WeatherApiUrl"], 
+			cityName,
+			_configuration["WeatherAppId"])).GetAwaiter().GetResult();
+		return JsonSerializer.Deserialize<WeatherModel>(data);
+	}
+}

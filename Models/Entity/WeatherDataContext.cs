@@ -7,24 +7,27 @@ namespace WeatherData.Models.Entity
 {
     public partial class WeatherDataContext : DbContext
     {
-        public WeatherDataContext()
+	    
+	    private readonly IConfiguration _configuration;
+        public WeatherDataContext(IConfiguration configuration)
         {
+	        _configuration = configuration;
         }
 
-        public WeatherDataContext(DbContextOptions<WeatherDataContext> options)
+        public WeatherDataContext(DbContextOptions<WeatherDataContext> options, IConfiguration configuration)
             : base(options)
         {
+	        _configuration = configuration;
         }
 
-        public virtual DbSet<City> Cities { get; set; } = null!;
+        public virtual DbSet<City?> Cities { get; set; } = null!;
         public virtual DbSet<TemperatureRecord> TemperatureRecords { get; set; } = null!;
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)
             {
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-                optionsBuilder.UseSqlServer("Server=(LocalDB)\\MSSQLLocalDB;Database=WeatherData;Trusted_Connection=True;");
+                optionsBuilder.UseSqlServer(_configuration.GetConnectionString("DefaultConnection"));
             }
         }
 

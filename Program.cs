@@ -1,6 +1,9 @@
 using Microsoft.EntityFrameworkCore;
+using WeatherData.BackgroundServices;
+using WeatherData.Contracts;
+using WeatherData.DataServices;
+using WeatherData.Models;
 using WeatherData.Models.Entity;
-using WeatherData.Services;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,7 +13,12 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddHttpClient();
 builder.Services.AddDbContext<WeatherDataContext>(options =>
 	options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-//builder.Services.AddHostedService<WeatherDataBackgroundService>();
+builder.Services.AddHostedService<WeatherDataBackgroundService>();
+builder.Services.AddSingleton<IWeatherDataServiceProcessor, WeatherDataServiceProcessor>();
+builder.Services.AddSingleton<IHttpClientFacade, HttpClientFacade>();
+builder.Services.AddSingleton<IDateTimeFacade, DateTimeFacade>();
+builder.Services.AddSingleton<IWeatherDataContextProvider, WeatherDataContextProvider>();
+builder.Services.AddSingleton<IWeatherDataService, WeatherDataService>();
 
 
 var app = builder.Build();
