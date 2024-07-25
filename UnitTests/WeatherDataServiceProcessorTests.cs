@@ -14,7 +14,7 @@ public class WeatherDataServiceProcessorTests
 		// Arrange
 		var httpClientMock = new Mock<IHttpClientFacade>();
 		var weatherDataServiceMock = new Mock<IWeatherDataService>();
-		var configurationMock = new Mock<IConfiguration>();
+		var configurationMock = new Mock<IWeatherDataConfigurationProvider>();
 		var dateTimeProviderMock = new Mock<IDateTimeFacade>();
 
 		var cities = new List<City>
@@ -26,10 +26,10 @@ public class WeatherDataServiceProcessorTests
 	    
 		var testTime = new DateTime(2024, 1, 1, 12, 0, 0);
 
+		configurationMock.Setup(x => x.GetActualCitiesNumberLimit()).Returns(5);
 		weatherDataServiceMock.Setup(ds => ds.GetLastRequestedCities(5)).Returns(cities);
-		configurationMock.Setup(x => x["WeatherApiUrl"]).Returns("https://api.openweathermap.org/data/2.5/weather?q={0}&appid={1}&units=metric");
-		configurationMock.Setup(x => x["WeatherAppId"]).Returns("fakeAppId");
-		httpClientMock.Setup(client => client.GetStringAsync("https://api.openweathermap.org/data/2.5/weather?q=TestCity&appid=fakeAppId&units=metric")).ReturnsAsync(weatherJson);
+		configurationMock.Setup(x => x.GetWeatherApiLink("TestCity")).Returns("https://api.openweathermap.org/data/2.5/weather");
+		httpClientMock.Setup(client => client.GetStringAsync("https://api.openweathermap.org/data/2.5/weather")).ReturnsAsync(weatherJson);
 		dateTimeProviderMock.Setup(time => time.Now()).Returns(testTime);
 
 		var processor = new WeatherDataServiceProcessor(httpClientMock.Object,  weatherDataServiceMock.Object, configurationMock.Object, dateTimeProviderMock.Object);
@@ -38,8 +38,10 @@ public class WeatherDataServiceProcessorTests
 		await Task.Run(() => processor.UpdateTemperatureData());
 
 		// Assert
+		configurationMock.Verify(x => x.GetActualCitiesNumberLimit(), Times.Once);
 		weatherDataServiceMock.Verify(ds => ds.GetLastRequestedCities(5), Times.Once);
-		httpClientMock.Verify(client => client.GetStringAsync("https://api.openweathermap.org/data/2.5/weather?q=TestCity&appid=fakeAppId&units=metric"), Times.Once);
+		configurationMock.Verify(x => x.GetWeatherApiLink("TestCity"), Times.Once);
+		httpClientMock.Verify(client => client.GetStringAsync("https://api.openweathermap.org/data/2.5/weather"), Times.Once);
 		dateTimeProviderMock.Verify(time => time.Now(), Times.Once);;
 		weatherDataServiceMock.Verify(ds =>
 			ds.AddTemperatureData(It.Is<IEnumerable<TemperatureRecord>>(x => x.FirstOrDefault()!.Temperature == 25)), Times.AtLeastOnce);

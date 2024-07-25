@@ -16,7 +16,7 @@ export default function Cities() {
 				<Modal open={modal}>
 					<FieldSection closeModal={closeModal}/>
 					<Button style={{display: 'block', marginLeft: 'auto'}}
-							onClick={() => setModal(false)}>Закрыть</Button>
+							onClick={() => setModal(false)}>Close</Button>
 				</Modal>
 			</div>
 		</section>

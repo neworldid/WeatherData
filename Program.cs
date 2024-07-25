@@ -2,8 +2,8 @@ using Microsoft.EntityFrameworkCore;
 using WeatherData.BackgroundServices;
 using WeatherData.Contracts;
 using WeatherData.DataServices;
-using WeatherData.Models;
 using WeatherData.Models.Entity;
+using WeatherData.Providers;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -19,7 +19,7 @@ builder.Services.AddSingleton<IHttpClientFacade, HttpClientFacade>();
 builder.Services.AddSingleton<IDateTimeFacade, DateTimeFacade>();
 builder.Services.AddSingleton<IWeatherDataContextProvider, WeatherDataContextProvider>();
 builder.Services.AddSingleton<IWeatherDataService, WeatherDataService>();
-
+builder.Services.AddSingleton<IWeatherDataConfigurationProvider, WeatherDataConfigurationProvider>();
 
 var app = builder.Build();
 

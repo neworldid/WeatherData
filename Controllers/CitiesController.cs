@@ -8,14 +8,14 @@ namespace WeatherData.Controllers;
 public class CitiesController : Controller
 {
 	private readonly IHttpClientFacade _client;
-	private readonly IConfiguration _configuration;
+	private readonly IWeatherDataConfigurationProvider _configurationProvider;
 	private readonly IWeatherDataService _weatherDataService;
 	private readonly IWeatherDataServiceProcessor _weatherDataServiceProcessor;
 	
-	public CitiesController(IHttpClientFacade client, IConfiguration configuration, IWeatherDataService weatherDataService, IWeatherDataServiceProcessor weatherDataServiceProcessor)
+	public CitiesController(IHttpClientFacade client, IWeatherDataConfigurationProvider configurationProvider, IWeatherDataService weatherDataService, IWeatherDataServiceProcessor weatherDataServiceProcessor)
 	{
 		_client = client;
-		_configuration = configuration;
+		_configurationProvider = configurationProvider;
 		_weatherDataService = weatherDataService;
 		_weatherDataServiceProcessor = weatherDataServiceProcessor;
 	}
@@ -30,10 +30,7 @@ public class CitiesController : Controller
 	{
 		try
 		{
-			var response = await _client.GetAsync(string.Format(
-				_configuration["WeatherApiUrl"], 
-				city.CityName,
-				_configuration["WeatherAppId"]));
+			var response = await _client.GetAsync(_configurationProvider.GetWeatherApiLink(city.CityName));
 			
 			if (!response.IsSuccessStatusCode)
 				return Json(new { Success = false, Message = $"Impossible to get weather data for {city.CityName}" });
@@ -64,21 +61,14 @@ public class CitiesController : Controller
 	[HttpGet]
 	public Task<JsonResult> GetActualCities()
 	{
-		var cities = _weatherDataService.GetLastRequestedCities(5);
+		var cities = _weatherDataService.GetLastRequestedCities(_configurationProvider.GetActualCitiesNumberLimit());
 		return Task.FromResult(Json(new { Success = true, Data = cities }));
 	}
 	
 	[HttpGet]
 	public IActionResult GetInterval()
 	{
-		try
-		{
-			var updateInterval = _configuration["UpdateDataIntervalInSeconds"];
-			return Ok(updateInterval);
-		}
-		catch (Exception e)
-		{
-			return StatusCode(500);
-		}
+		var updateInterval = _configurationProvider.GetUpdateDataIntervalInSeconds();
+		return Ok(updateInterval);
 	}
 }

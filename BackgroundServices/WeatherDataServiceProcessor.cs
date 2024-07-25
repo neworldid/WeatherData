@@ -9,20 +9,24 @@ public class WeatherDataServiceProcessor : IWeatherDataServiceProcessor
 {
 	private readonly IHttpClientFacade _client;
 	private readonly IWeatherDataService _weatherDataService;
-	private readonly IConfiguration _configuration;
+	private readonly IWeatherDataConfigurationProvider _configurationProvider;
 	private readonly IDateTimeFacade _dateTime;
 
-	public WeatherDataServiceProcessor(IHttpClientFacade client, IWeatherDataService weatherDataService, IConfiguration configuration, IDateTimeFacade dateTime)
+	public WeatherDataServiceProcessor(
+		IHttpClientFacade client, 
+		IWeatherDataService weatherDataService, 
+		IWeatherDataConfigurationProvider configurationProvider, 
+		IDateTimeFacade dateTime)
 	{
 		_client = client;
 		_weatherDataService = weatherDataService;
-		_configuration = configuration;
+		_configurationProvider = configurationProvider;
 		_dateTime = dateTime;
 	}
 	
 	public void UpdateTemperatureData()
 	{
-		var activeCities = _weatherDataService.GetLastRequestedCities(5);
+		var activeCities = _weatherDataService.GetLastRequestedCities(_configurationProvider.GetActualCitiesNumberLimit());
 		var temperatureRecords = new List<TemperatureRecord>();
 		
 		foreach (var city in activeCities)
@@ -41,10 +45,9 @@ public class WeatherDataServiceProcessor : IWeatherDataServiceProcessor
 	
 	private WeatherModel? GetWeatherData(string cityName)
 	{
-		var data = _client.GetStringAsync(string.Format(
-			_configuration["WeatherApiUrl"], 
-			cityName,
-			_configuration["WeatherAppId"])).GetAwaiter().GetResult();
+		var data = _client.GetStringAsync(_configurationProvider.GetWeatherApiLink(cityName))
+			.GetAwaiter().GetResult();
+		
 		return JsonSerializer.Deserialize<WeatherModel>(data);
 	}
 }

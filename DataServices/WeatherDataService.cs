@@ -104,11 +104,12 @@ public class WeatherDataService : IWeatherDataService
 				.OrderByDescending(x => x.ModifiedTime)
 				.Take(recordNumber).Select(x => new TemperatureRecordModel
 				{
+					CityId = x.CityId,
 					CityName = x.City!.CityName,
 					Country = x.City.Country,
 					Temperature = x.Temperature,
 					ModifiedDate = x.ModifiedTime
-				}).ToList();
+				}).ToList().DistinctBy(x => x.CityId);
 			return data;
 		}
 		catch (Exception e)

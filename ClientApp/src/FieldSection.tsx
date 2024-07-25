@@ -49,10 +49,10 @@ export default function FieldSection({closeModal}: FieldSectionProps) {
 
 	return (
 		<section>
-			<h3>Добавление города</h3>
+			<h3>City adding</h3>
 
 			<form style={{marginBottom: "1rem"}} onSubmit={(e) => e.preventDefault()}>
-				<label htmlFor="cityInput">Введите название города</label>
+				<label htmlFor="cityInput">Input city</label>
 				<input
 					type="text"
 					className="control"

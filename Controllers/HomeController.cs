@@ -9,10 +9,12 @@ namespace WeatherData.Controllers;
 public class HomeController : Controller
 {
 	private readonly IWeatherDataService _dataService;
+	private readonly IWeatherDataConfigurationProvider _configurationProvider;
 
-	public HomeController(IWeatherDataService dataService)
+	public HomeController(IWeatherDataService dataService, IWeatherDataConfigurationProvider configurationProvider)
 	{
 		_dataService = dataService;
+		_configurationProvider = configurationProvider;
 	}
 
 	public IActionResult Index()
@@ -25,7 +27,7 @@ public class HomeController : Controller
 	{
 		var cityIds = _dataService.GetLastRequestedCities(5).Select(x => x.Id).ToList();
 		
-		var temperatures = _dataService.GetActualTemperatureData(cityIds, 5);
+		var temperatures = _dataService.GetActualTemperatureData(cityIds, _configurationProvider.GetActualCitiesNumberLimit());
 		
 		return Task.FromResult(Json(new { Success = true, Data = temperatures }));
 	}
